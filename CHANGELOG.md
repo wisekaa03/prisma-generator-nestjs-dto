@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.12.0] - 2022-07-25
+
+### Added
+
+- `@DtoRelationIncludeId` annotation: relation IDs are omitted by default, but can be forced to be included in the DTOs
+
 ## [1.11.4] - 2022-05-17
 
 ### Fixed
