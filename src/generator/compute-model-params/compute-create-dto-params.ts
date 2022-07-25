@@ -2,6 +2,7 @@ import {
   DTO_CREATE_OPTIONAL,
   DTO_RELATION_CAN_CONNECT_ON_CREATE,
   DTO_RELATION_CAN_CREATE_ON_CREATE,
+  DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_CREATE,
   DTO_RELATION_REQUIRED,
 } from '../annotations';
@@ -64,6 +65,12 @@ export const computeCreateDtoParams = ({
       classValidators?: IClassValidator[];
     } = {};
 
+    if (
+      isAnnotatedWith(field, DTO_RELATION_INCLUDE_ID) &&
+      relationScalarFieldNames.includes(name)
+    )
+      field.isReadOnly = false;
+
     if (isReadOnly(field)) return result;
     if (isRelation(field)) {
       if (!isAnnotatedWithOneOf(field, DTO_RELATION_MODIFIERS_ON_CREATE)) {
@@ -98,7 +105,12 @@ export const computeCreateDtoParams = ({
       if (!templateHelpers.config.noDependencies)
         concatIntoArray(relationInputType.apiExtraModels, apiExtraModels);
     }
-    if (relationScalarFieldNames.includes(name)) return result;
+
+    if (
+      !isAnnotatedWith(field, DTO_RELATION_INCLUDE_ID) &&
+      relationScalarFieldNames.includes(name)
+    )
+      return result;
 
     // fields annotated with @DtoReadOnly are filtered out before this
     // so this safely allows to mark fields that are required in Prisma Schema

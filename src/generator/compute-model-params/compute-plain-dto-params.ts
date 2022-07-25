@@ -1,4 +1,4 @@
-import { DTO_ENTITY_HIDDEN } from '../annotations';
+import { DTO_ENTITY_HIDDEN, DTO_RELATION_INCLUDE_ID } from '../annotations';
 import { isAnnotatedWith, isRelation } from '../field-classifiers';
 import {
   getRelationScalars,
@@ -46,7 +46,11 @@ export const computePlainDtoParams = ({
     if (isAnnotatedWith(field, DTO_ENTITY_HIDDEN)) return result;
 
     if (isRelation(field)) return result;
-    if (relationScalarFieldNames.includes(name)) return result;
+    if (
+      !isAnnotatedWith(field, DTO_RELATION_INCLUDE_ID) &&
+      relationScalarFieldNames.includes(name)
+    )
+      return result;
 
     if (!templateHelpers.config.noDependencies) {
       decorators.apiProperties = parseApiProperty(field, { default: false });
