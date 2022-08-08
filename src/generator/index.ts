@@ -3,6 +3,7 @@ import { camel, pascal, kebab, snake } from 'case';
 import { logger } from '@prisma/sdk';
 import { makeHelpers } from './template-helpers';
 import { computeModelParams } from './compute-model-params';
+import { computeTypeParams } from './compute-type-params';
 import { generateConnectDto } from './generate-connect-dto';
 import { generateCreateDto } from './generate-create-dto';
 import { generateUpdateDto } from './generate-update-dto';
@@ -67,12 +68,27 @@ export const run = ({
   });
   const allModels = dmmf.datamodel.models;
 
+  const filteredTypes: Model[] = dmmf.datamodel.types
+    .filter((model) => !isAnnotatedWith(model, DTO_IGNORE_MODEL))
+    .map((model) => ({
+      ...model,
+      output: {
+        dto: outputToNestJsResourceStructure
+          ? flatResourceStructure
+            ? path.join(output, transformFileNameCase(model.name))
+            : path.join(output, transformFileNameCase(model.name), 'dto')
+          : output,
+        entity: '',
+      },
+    }));
+
   const filteredModels: Model[] = allModels
     .filter((model) => !isAnnotatedWith(model, DTO_IGNORE_MODEL))
     // adds `output` information for each model, so we can compute relative import paths
     // this assumes that NestJS resource modules (more specifically their folders on disk) are named as `transformFileNameCase(model.name)`
     .map((model) => ({
       ...model,
+      type: 'model',
       output: {
         dto: outputToNestJsResourceStructure
           ? flatResourceStructure
@@ -87,12 +103,62 @@ export const run = ({
       },
     }));
 
+  const typeFiles = filteredTypes.map((model) => {
+    logger.info(`Processing Type ${model.name}`);
+
+    const typeParams = computeTypeParams({
+      model,
+      allModels: filteredTypes,
+      templateHelpers,
+    });
+
+    // generate create-model.dto.ts
+    const createDto = {
+      fileName: path.join(
+        model.output.dto,
+        templateHelpers.createDtoFilename(model.name, true),
+      ),
+      content: generateCreateDto({
+        ...typeParams.create,
+        exportRelationModifierClasses,
+        templateHelpers,
+      }),
+    };
+
+    // generate update-model.dto.ts
+    const updateDto = {
+      fileName: path.join(
+        model.output.dto,
+        templateHelpers.updateDtoFilename(model.name, true),
+      ),
+      content: generateUpdateDto({
+        ...typeParams.update,
+        exportRelationModifierClasses,
+        templateHelpers,
+      }),
+    };
+
+    // generate model.dto.ts
+    const plainDto = {
+      fileName: path.join(
+        model.output.dto,
+        templateHelpers.plainDtoFilename(model.name, true),
+      ),
+      content: generatePlainDto({
+        ...typeParams.plain,
+        templateHelpers,
+      }),
+    };
+
+    return [createDto, updateDto, plainDto];
+  });
+
   const modelFiles = filteredModels.map((model) => {
     logger.info(`Processing Model ${model.name}`);
 
     const modelParams = computeModelParams({
       model,
-      allModels: filteredModels,
+      allModels: [...filteredTypes, ...filteredModels],
       templateHelpers,
     });
 
@@ -164,5 +230,5 @@ export const run = ({
     return [connectDto, createDto, updateDto, entity, plainDto];
   });
 
-  return [...modelFiles].flat();
+  return [...typeFiles, ...modelFiles].flat();
 };

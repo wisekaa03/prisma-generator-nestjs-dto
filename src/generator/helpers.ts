@@ -259,6 +259,7 @@ export const generateRelationInput = ({
         isRequired: relationInputClassProps.length === 1,
         isList: field.isList,
       })),
+      'plain',
       true,
     )}
   }`);

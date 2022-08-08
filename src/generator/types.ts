@@ -24,6 +24,9 @@ export interface ParsedField {
   default?: any;
   apiProperties?: IApiProperty[];
   classValidators?: IClassValidator[];
+  relationName?: string;
+  relationFromFields?: string[];
+  relationToFields?: string[];
 }
 
 export interface ExtraModel {
@@ -81,6 +84,12 @@ export interface ModelParams {
   create: CreateDtoParams;
   update: UpdateDtoParams;
   entity: EntityParams;
+  plain: PlainDtoParams;
+}
+
+export interface TypeParams {
+  create: CreateDtoParams;
+  update: UpdateDtoParams;
   plain: PlainDtoParams;
 }
 

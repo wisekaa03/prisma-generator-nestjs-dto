@@ -24,6 +24,6 @@ ${t.each(
 
 ${t.if(apiExtraModels.length, t.apiExtraModels(apiExtraModels))}
 export ${t.config.outputType} ${t.updateDtoName(model.name)} {
-  ${t.fieldsToDtoProps(fields, true)}
+  ${t.fieldsToDtoProps(fields, 'update', true)}
 }
 `;

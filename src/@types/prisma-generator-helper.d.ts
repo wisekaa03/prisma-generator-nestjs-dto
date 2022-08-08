@@ -33,6 +33,7 @@ declare module '@prisma/generator-helper' {
     }
     interface Datamodel {
       models: Model[];
+      types: Model[];
       enums: DatamodelEnum[];
     }
     interface uniqueIndex {

@@ -1,5 +1,6 @@
 import { DMMF } from '@prisma/generator-helper';
 import { IClassValidator, ParsedField } from './types';
+import { isType } from './field-classifiers';
 
 const availableValidators = [
   'IsDefined',
@@ -141,7 +142,9 @@ export function parseClassValidators(field: DMMF.Field): IClassValidator[] {
     validators.push({ name: 'IsOptional' });
   }
 
-  if (field.isList) {
+  if (isType(field)) {
+    validators.push({ name: 'ValidateNested' });
+  } else if (field.isList) {
     validators.push({ name: 'IsArray' });
   } else {
     const typeValidator = scalarToValidator(field.type);

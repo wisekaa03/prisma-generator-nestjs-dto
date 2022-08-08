@@ -1,3 +1,5 @@
+import slash from 'slash';
+import path from 'node:path';
 import {
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
   DTO_RELATION_CAN_CREATE_ON_UPDATE,
@@ -12,6 +14,7 @@ import {
   isReadOnly,
   isRelation,
   isRequiredWithDefaultValue,
+  isType,
   isUpdatedAt,
 } from '../field-classifiers';
 import {
@@ -19,6 +22,7 @@ import {
   concatUniqueIntoArray,
   generateRelationInput,
   getRelationScalars,
+  getRelativePath,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
   zipImportStatementParams,
@@ -109,6 +113,43 @@ export const computeUpdateDtoParams = ({
       if (isId(field)) return result;
       if (isUpdatedAt(field)) return result;
       if (isRequiredWithDefaultValue(field)) return result;
+    }
+
+    if (isType(field)) {
+      // don't try to import the class we're preparing params for
+      if (field.type !== model.name) {
+        const modelToImportFrom = allModels.find(
+          ({ name }) => name === field.type,
+        );
+
+        if (!modelToImportFrom)
+          throw new Error(
+            `related type '${field.type}' for '${model.name}.${field.name}' not found`,
+          );
+
+        const importName = templateHelpers.updateDtoName(field.type);
+        const importFrom = slash(
+          `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+            path.sep
+          }${templateHelpers.updateDtoFilename(field.type)}`,
+        );
+
+        // don't double-import the same thing
+        // TODO should check for match on any import name ( - no matter where from)
+        if (
+          !imports.some(
+            (item) =>
+              Array.isArray(item.destruct) &&
+              item.destruct.includes(importName) &&
+              item.from === importFrom,
+          )
+        ) {
+          imports.push({
+            destruct: [importName],
+            from: importFrom,
+          });
+        }
+      }
     }
 
     if (templateHelpers.config.classValidation) {
