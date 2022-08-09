@@ -158,7 +158,10 @@ export const computeEntityParams = ({
     }
 
     if (!templateHelpers.config.noDependencies) {
-      decorators.apiProperties = parseApiProperty(field, { default: false });
+      decorators.apiProperties = parseApiProperty(
+        { ...field, isRequired: false, isNullable: !field.isRequired },
+        { default: false },
+      );
       if (decorators.apiProperties.length) hasApiProperty = true;
     }
 

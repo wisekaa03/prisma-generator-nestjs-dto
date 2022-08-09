@@ -123,6 +123,20 @@ export function parseApiProperty(
     properties.push({ name: 'default', value: `${defaultValue}` });
   }
 
+  if (!field.isRequired) {
+    properties.push({ name: 'required', value: 'false' });
+  }
+  if (
+    typeof field.isNullable === 'boolean' ? field.isNullable : !field.isRequired
+  ) {
+    properties.push({ name: 'nullable', value: 'true' });
+  }
+
+  // set dummy property to force `@ApiProperty` decorator
+  if (properties.length === 0) {
+    properties.push({ name: 'dummy', value: '' });
+  }
+
   return properties;
 }
 
@@ -130,6 +144,13 @@ export function parseApiProperty(
  * Compose `@ApiProperty()` decorator.
  */
 export function decorateApiProperty(field: ParsedField): string {
+  if (
+    field.apiProperties?.length === 1 &&
+    field.apiProperties[0].name === 'dummy'
+  ) {
+    return '@ApiProperty()\n';
+  }
+
   let decorator = '';
 
   if (field.apiProperties?.length) {

@@ -23,12 +23,15 @@ generator nestjsDto {
 
 model Product {
   id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  /// @description name
   name   String
   photos Photo[]
 }
 
 type Photo {
   height Int
+  /// @description Image width
+  /// @minimum 9
   width  Int
   url    String
   file   File?
