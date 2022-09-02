@@ -2,60 +2,37 @@ import { DMMF } from '@prisma/generator-helper';
 import { IClassValidator, ParsedField } from './types';
 import { isType } from './field-classifiers';
 
-const availableValidators = [
-  'IsDefined',
-  'Equals',
-  'NotEquals',
+const validatorsWithoutParams = [
   'IsEmpty',
-  'IsIn',
-  'IsNotIn',
   'IsDate',
-  'IsDivisibleBy',
+  'IsBoolean',
+  'IsString',
+  'IsInt',
   'IsPositive',
   'IsNegative',
-  'Min',
-  'Max',
-  'MinDate',
-  'MaxDate',
   'IsBooleanString',
   'IsDateString',
-  'IsNumberString',
-  'Contains',
-  'NotContains',
   'IsAlpha',
   'IsAlphaNumeric',
-  'IsDecimal',
   'IsAscii',
   'IsBase32',
   'IsBase64',
   'IsIBAN',
   'IsBIC',
-  'IsByteLength',
   'IsCreditCard',
-  'IsCurrency',
   'IsEthereumAddress',
   'IsBtcAddress',
   'IsDataURI',
-  'IsEmail',
-  'IsFQDN',
   'IsFullWidth',
   'IsIsHalfWidth',
   'IsIsVariableWidth',
   'IsIsHexColor',
   'IsHSLColor',
-  'IsRgbColor',
-  'IsIdentityCard',
-  'IsPassportNumber',
-  'IsPostalCode',
   'IsHexadecimal',
   'IsOctal',
-  'IsMACAddress',
-  'IsIP',
   'IsPort',
-  'IsISBN',
   'IsEAN',
   'IsISIN',
-  'IsISO8601',
   'IsJWT',
   'IsObject',
   'IsNotEmptyObject',
@@ -64,8 +41,6 @@ const availableValidators = [
   'IsLatLong',
   'IsLatitude',
   'IsLongitude',
-  'IsMobilePhone',
-  'IsPhoneNumber',
   'IsISO31661Alpha2',
   'IsISO31661Alpha3',
   'IsLocale',
@@ -73,29 +48,70 @@ const availableValidators = [
   'IsMultiByte',
   'IsNumberString',
   'IsSurrogatePair',
-  'IsUrl',
   'IsMagnetURI',
-  'IsUUID',
   'IsFirebasePushId',
-  'Length',
-  'MinLength',
-  'MinLength',
-  'MaxLength',
-  'Matches',
   'IsMilitaryTime',
-  'IsHash',
   'IsMimeType',
   'IsSemVer',
-  'IsISSN',
   'IsISRC',
+  'Allow',
+];
+
+const validatorsWithParams = new Map<string, string>([
+  ['IsDefined', "''"],
+  ['Equals', "''"],
+  ['NotEquals', "''"],
+  ['IsIn', '[]'],
+  ['IsNotIn', '[]'],
+  ['IsNumber', '{}'],
+  ['IsEnum', '{}'],
+  ['IsDivisibleBy', '1'],
+  ['Min', '0'],
+  ['Max', '10'],
+  ['MinDate', 'new Date()'],
+  ['MaxDate', 'new Date()'],
+  ['IsNumberString', '{}'],
+  ['Contains', "''"],
+  ['NotContains', "''"],
+  ['IsDecimal', '{}'],
+  ['IsByteLength', '1, 4'],
+  ['IsCurrency', '{}'],
+  ['IsEmail', '{}'],
+  ['IsFQDN', '{}'],
+  ['IsRgbColor', '{}'],
+  ['IsIdentityCard', "''"],
+  ['IsPassportNumber', "''"],
+  ['IsPostalCode', "''"],
+  ['IsMACAddress', '{}'],
+  ['IsIP', "'4'"],
+  ['IsISBN', "'10'"],
+  ['IsISO8601', '{}'],
+  ['IsMobilePhone', "''"],
+  ['IsPhoneNumber', "''"],
+  ['IsUrl', '{}'],
+  ['IsUUID', "'4'"],
+  ['Length', '0, 10'],
+  ['MinLength', '0'],
+  ['MaxLength', '10'],
+  ['Matches', "'', ''"],
+  ['IsHash', "'md4'"],
+  ['IsISSN', '{}'],
+  ['IsInstance', ''],
+]);
+
+const arrayValidators = [
   'ArrayContains',
   'ArrayNotContains',
   'ArrayNotEmpty',
   'ArrayMinSize',
   'ArrayMaxSize',
   'ArrayUnique',
-  'IsInstance',
-  'Allow',
+];
+
+const allValidators = [
+  ...validatorsWithoutParams,
+  ...validatorsWithParams.keys(),
+  ...arrayValidators,
 ];
 
 const PrismaScalarToValidator: Record<string, IClassValidator> = {
@@ -110,7 +126,7 @@ const PrismaScalarToValidator: Record<string, IClassValidator> = {
 };
 
 function scalarToValidator(scalar: string): IClassValidator | undefined {
-  return PrismaScalarToValidator[scalar];
+  return { ...PrismaScalarToValidator[scalar] };
 }
 
 function extractValidator(
@@ -128,6 +144,40 @@ function extractValidator(
   }
 
   return null;
+}
+
+function optEach(validator: IClassValidator, isList: boolean): void {
+  if (isList && !arrayValidators.includes(validator.name)) {
+    const defaultParams = validatorsWithParams.get(validator.name);
+
+    if (!validator.value) {
+      validator.value = `${
+        defaultParams ? defaultParams + ', ' : ''
+      }{ each: true }`;
+      return;
+    }
+
+    if (/each:/.test(validator.value)) return;
+
+    if (defaultParams) {
+      const defaults = defaultParams.split(/,\s*/);
+      const values = validator.value.replace(/{.*}/, '_').split(/,\s*/);
+      if (values.length > defaults.length && /.*}\s*$/.test(validator.value)) {
+        validator.value = validator.value.replace(/}\s*$/, ', each: true }');
+        return;
+      }
+      validator.value +=
+        defaults.slice(values.length).join(', ') + ', { each: true }';
+      return;
+    }
+
+    if (/.*}\s*$/.test(validator.value)) {
+      validator.value = validator.value.replace(/}\s*$/, ', each: true }');
+      return;
+    }
+
+    validator.value += ', { each: true }';
+  }
 }
 
 /**
@@ -150,7 +200,9 @@ export function parseClassValidators(
   }
 
   if (isType(field)) {
-    validators.push({ name: 'ValidateNested' });
+    const nestedValidator: IClassValidator = { name: 'ValidateNested' };
+    optEach(nestedValidator, field.isList);
+    validators.push(nestedValidator);
     validators.push({
       name: 'Type',
       value: `() => ${dtoName ? dtoName(field.type) : field.type}`,
@@ -158,14 +210,20 @@ export function parseClassValidators(
   } else {
     const typeValidator = scalarToValidator(field.type);
     if (typeValidator) {
+      optEach(typeValidator, field.isList);
       validators.push(typeValidator);
     }
   }
 
   if (field.documentation) {
-    for (const prop of availableValidators) {
+    for (const prop of allValidators) {
       const validator = extractValidator(field, prop);
       if (validator) {
+        // remove any auto-generated validator in favor of user-defined validator
+        const index = validators.findIndex((v) => v.name === validator.name);
+        if (index > -1) validators.splice(index, 1);
+
+        optEach(validator, field.isList);
         validators.push(validator);
       }
     }

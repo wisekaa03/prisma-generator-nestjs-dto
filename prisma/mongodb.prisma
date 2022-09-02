@@ -26,6 +26,8 @@ model Product {
   /// @description name
   name   String
   photos Photo[]
+  /// @IsIn(['foo', 'bar'])
+  tags   String[]
 }
 
 type Photo {
