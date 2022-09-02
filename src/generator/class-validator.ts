@@ -133,7 +133,10 @@ function extractValidator(
 /**
  * Parse all types of class validators.
  */
-export function parseClassValidators(field: DMMF.Field): IClassValidator[] {
+export function parseClassValidators(
+  field: DMMF.Field,
+  dtoName?: (name: string) => string,
+): IClassValidator[] {
   const validators: IClassValidator[] = [];
 
   if (field.isRequired) {
@@ -142,10 +145,16 @@ export function parseClassValidators(field: DMMF.Field): IClassValidator[] {
     validators.push({ name: 'IsOptional' });
   }
 
+  if (field.isList) {
+    validators.push({ name: 'IsArray' });
+  }
+
   if (isType(field)) {
     validators.push({ name: 'ValidateNested' });
-  } else if (field.isList) {
-    validators.push({ name: 'IsArray' });
+    validators.push({
+      name: 'Type',
+      value: `() => ${dtoName ? dtoName(field.type) : field.type}`,
+    });
   } else {
     const typeValidator = scalarToValidator(field.type);
     if (typeValidator) {

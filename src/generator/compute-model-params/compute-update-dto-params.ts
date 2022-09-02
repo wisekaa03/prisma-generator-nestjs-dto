@@ -153,10 +153,13 @@ export const computeUpdateDtoParams = ({
     }
 
     if (templateHelpers.config.classValidation) {
-      decorators.classValidators = parseClassValidators({
-        ...field,
-        ...overrides,
-      });
+      decorators.classValidators = parseClassValidators(
+        {
+          ...field,
+          ...overrides,
+        },
+        templateHelpers.updateDtoName,
+      );
       concatUniqueIntoArray(
         decorators.classValidators,
         classValidators,
@@ -189,9 +192,18 @@ export const computeUpdateDtoParams = ({
   }
 
   if (classValidators.length) {
+    if (classValidators.find((cv) => cv.name === 'Type')) {
+      imports.unshift({
+        from: 'class-transformer',
+        destruct: ['Type'],
+      });
+    }
     imports.unshift({
       from: 'class-validator',
-      destruct: classValidators.map((v) => v.name).sort(),
+      destruct: classValidators
+        .filter((cv) => cv.name !== 'Type')
+        .map((v) => v.name)
+        .sort(),
     });
   }
 
