@@ -21,6 +21,7 @@ This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/veg
 * enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
 * optionally add [validation decorators](#validation-decorators)
 * control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
+* experimental support for composite types
 
 ### ToDo
 
