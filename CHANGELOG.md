@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.13.0-beta.0] - 2022-09-02
+
+### Added
+
+- support for composite types (including nested class validation) #2
+
+### Changed
+
+- set `@ApiProperty({ required: false, nullable: true }` if field is optional
+- add `{ each: true }` class-validator option if field is a list
+
 ## [1.12.0] - 2022-07-25
 
 ### Added
