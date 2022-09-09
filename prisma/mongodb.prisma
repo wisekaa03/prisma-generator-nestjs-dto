@@ -25,6 +25,7 @@ model Product {
   id     String  @id @default(auto()) @map("_id") @db.ObjectId
   /// @description name
   name   String
+  /// @DtoTypeFullUpdate
   photos Photo[]
   /// @IsIn(['foo', 'bar'])
   tags   String[]

@@ -5,6 +5,7 @@ import {
   DTO_RELATION_CAN_CREATE_ON_UPDATE,
   DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_UPDATE,
+  DTO_TYPE_FULL_UPDATE,
   DTO_UPDATE_OPTIONAL,
 } from '../annotations';
 import {
@@ -108,6 +109,7 @@ export const computeUpdateDtoParams = ({
     // so this safely allows to mark fields that are required in Prisma Schema
     // as **not** required in UpdateDTO
     const isDtoOptional = isAnnotatedWith(field, DTO_UPDATE_OPTIONAL);
+    const doFullUpdate = isAnnotatedWith(field, DTO_TYPE_FULL_UPDATE);
 
     if (!isDtoOptional) {
       if (isId(field)) return result;
@@ -127,11 +129,17 @@ export const computeUpdateDtoParams = ({
             `related type '${field.type}' for '${model.name}.${field.name}' not found`,
           );
 
-        const importName = templateHelpers.updateDtoName(field.type);
+        const importName = doFullUpdate
+          ? templateHelpers.createDtoName(field.type)
+          : templateHelpers.updateDtoName(field.type);
         const importFrom = slash(
           `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
             path.sep
-          }${templateHelpers.updateDtoFilename(field.type)}`,
+          }${
+            doFullUpdate
+              ? templateHelpers.createDtoFilename(field.type)
+              : templateHelpers.updateDtoFilename(field.type)
+          }`,
         );
 
         // don't double-import the same thing
@@ -158,7 +166,9 @@ export const computeUpdateDtoParams = ({
           ...field,
           ...overrides,
         },
-        templateHelpers.updateDtoName,
+        isType(field) && doFullUpdate
+          ? templateHelpers.createDtoName
+          : templateHelpers.updateDtoName,
       );
       concatUniqueIntoArray(
         decorators.classValidators,

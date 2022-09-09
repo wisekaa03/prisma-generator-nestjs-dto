@@ -1,6 +1,9 @@
+import { DMMF } from '@prisma/generator-helper';
 import { ImportStatementParams, ParsedField } from './types';
 import { decorateApiProperty } from './api-decorator';
 import { decorateClassValidators } from './class-validator';
+import { isAnnotatedWith, isType } from './field-classifiers';
+import { DTO_TYPE_FULL_UPDATE } from './annotations';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -162,16 +165,21 @@ export const makeHelpers = ({
     field: ParsedField,
     dtoType: 'create' | 'update' | 'plain' = 'plain',
     toInputType = false,
-  ) =>
-    `${
+  ) => {
+    const doFullUpdate =
+      dtoType === 'update' &&
+      isType(field as DMMF.Field) &&
+      isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
+    return `${
       field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
         : field.kind === 'enum' || field.kind === 'relation-input'
         ? field.type
         : field.relationName
         ? entityName(field.type)
-        : dtoName(field.type, dtoType)
+        : dtoName(field.type, doFullUpdate ? 'create' : dtoType)
     }${when(field.isList, '[]')}`;
+  };
 
   const fieldToDtoProp = (
     field: ParsedField,
