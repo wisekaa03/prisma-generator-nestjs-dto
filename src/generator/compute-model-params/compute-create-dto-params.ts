@@ -59,7 +59,7 @@ export const computeCreateDtoParams = ({
 
   const fields = model.fields.reduce((result, field) => {
     const { name } = field;
-    const overrides: Partial<DMMF.Field> = { isNullable: !field.isRequired };
+    const overrides: Partial<DMMF.Field> = {};
     const decorators: {
       apiProperties?: IApiProperty[];
       classValidators?: IClassValidator[];
@@ -100,6 +100,7 @@ export const computeCreateDtoParams = ({
       // since relation input field types are translated to something like { connect: Foo[] }, the field type itself is not a list anymore.
       // You provide list input in the nested `connect` or `create` properties.
       overrides.isList = false;
+
       concatIntoArray(relationInputType.imports, imports);
       concatIntoArray(relationInputType.generatedClasses, extraClasses);
       if (!templateHelpers.config.noDependencies)

@@ -90,6 +90,7 @@ export const computeUpdateDtoParams = ({
 
       overrides.type = relationInputType.type;
       overrides.isList = false;
+      overrides.isNullable = false;
 
       concatIntoArray(relationInputType.imports, imports);
       concatIntoArray(relationInputType.generatedClasses, extraClasses);
