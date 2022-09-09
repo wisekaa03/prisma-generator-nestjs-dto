@@ -167,7 +167,7 @@ export const makeHelpers = ({
     }${unless(field.isRequired && !forceOptional, '?')}: ${fieldType(
       field,
       useInputTypes,
-    )};`;
+    )} ${when(field.isNullable, ' | null')};`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],

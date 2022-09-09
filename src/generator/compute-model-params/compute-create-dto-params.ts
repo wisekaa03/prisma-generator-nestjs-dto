@@ -59,7 +59,7 @@ export const computeCreateDtoParams = ({
 
   const fields = model.fields.reduce((result, field) => {
     const { name } = field;
-    const overrides: Partial<DMMF.Field> = {};
+    const overrides: Partial<DMMF.Field> = { isNullable: !field.isRequired };
     const decorators: {
       apiProperties?: IApiProperty[];
       classValidators?: IClassValidator[];
