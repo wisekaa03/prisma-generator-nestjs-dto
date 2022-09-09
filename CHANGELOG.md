@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.12.1] - 2022-09-09
+
+### Fixed
+
+- optional fields can be `null` in `CreateDTO` and `UpdateDTO`
+
+
 ## [1.12.0] - 2022-07-25
 
 ### Added
