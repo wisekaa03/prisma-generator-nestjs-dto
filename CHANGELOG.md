@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- `@DtoTypeFullUpdate` annotation #2
+- `@DtoTypeFullUpdate` annotation [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460)
 
 ## [1.12.2] - 2022-09-09
 

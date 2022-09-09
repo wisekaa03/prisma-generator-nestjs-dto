@@ -95,7 +95,7 @@ model Post {
 - `@DtoRelationCanCreateOnUpdate` - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `UpdateDTO` - useful when you want to allow to create related model instances
 - `@DtoRelationCanConnectOnUpdate` - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `UpdateDTO` - useful when you want/need to connect to an existing related instance
 - `@DtoRelationIncludeId` - include ID of a relation field that is otherwise omitted (use instead of `CanCreate`/`CanConnect` annotations, if you just want to pass the IDs)
-- `@DtoTypeFullUpdate` - in the generated `UpdateDTO`, use the `CreateDTO` of the composite type to enforce a complete replacement the old values (see #2)
+- `@DtoTypeFullUpdate` - in the generated `UpdateDTO`, use the `CreateDTO` of the composite type to enforce a complete replacement the old values (see [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460))
 
 ### Schema Object annotations
 
