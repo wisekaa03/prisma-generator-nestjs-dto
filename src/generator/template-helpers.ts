@@ -193,7 +193,7 @@ export const makeHelpers = ({
       field,
       dtoType,
       useInputTypes,
-    )};`;
+    )} ${when(field.isNullable, ' | null')};`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],

@@ -16,36 +16,38 @@ generator nestjsDto {
   entityPrefix                    = ""
   entitySuffix                    = "Entity"
   fileNamingStyle                 = "camel"
-  classValidation                 = "false"
+  classValidation                 = "true"
   noDependencies                  = "false"
   outputType                      = "class"
 }
 
 model Product {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   /// @Contains('Product')
   /// @description Project's name
   /// @example My first product
-  name        String   @db.VarChar(255)
-  description String   @db.VarChar(1024)
+  name        String      @db.VarChar(255)
+  description String      @db.VarChar(1024)
   /// @maxItems 5
-  images      Json[]   @db.Json
-  highlighted Boolean  @default(false)
+  images      Json[]      @db.Json
+  highlighted Boolean     @default(false)
   /// @DtoCreateOptional
   /// @description Number of reviews
   /// @minimum 9
   /// @example 12
-  reviewCount Int      @default(0)
+  reviewCount Int         @default(0)
   type        ProductType
   /// @ArrayNotEmpty
   tags        String[]
   attributes  Json?
   score       Float?
+  lastOrder   DateTime?
   /// @DtoCreateOptional
   /// @DtoUpdateOptional
-  note        String   @default("")
-  categoryId  String   @db.Uuid
-  companyId   String   @db.Uuid
+  note        String      @default("")
+  /// @DtoRelationIncludeId
+  categoryId  String      @db.Uuid
+  companyId   String      @db.Uuid
 
   /// @DtoRelationRequired
   /// @DtoRelationCanConnectOnCreate
@@ -54,6 +56,10 @@ model Product {
   /// @DtoRelationRequired
   /// @DtoRelationCanConnectOnCreate
   company Company @relation(fields: [companyId], references: [id])
+
+  /// @DtoRelationIncludeId
+  photoId String?
+  photo   Photo?  @relation(fields: [photoId], references: [id])
 
   /// @DtoEntityHidden
   /// @DtoCreateOptional
@@ -69,12 +75,17 @@ model Product {
 }
 
 model Category {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  updatedAt DateTime  @updatedAt
   Product   Product[]
 }
 
 model Company {
+  id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  Product Product[]
+}
+
+model Photo {
   id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   Product Product[]
 }

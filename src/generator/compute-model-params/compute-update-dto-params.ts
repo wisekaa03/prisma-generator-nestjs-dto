@@ -63,7 +63,10 @@ export const computeUpdateDtoParams = ({
 
   const fields = model.fields.reduce((result, field) => {
     const { name } = field;
-    const overrides: Partial<DMMF.Field> = { isRequired: false };
+    const overrides: Partial<DMMF.Field> = {
+      isRequired: false,
+      isNullable: !field.isRequired,
+    };
     const decorators: {
       apiProperties?: IApiProperty[];
       classValidators?: IClassValidator[];
@@ -92,6 +95,7 @@ export const computeUpdateDtoParams = ({
 
       overrides.type = relationInputType.type;
       overrides.isList = false;
+      overrides.isNullable = false;
 
       concatIntoArray(relationInputType.imports, imports);
       concatIntoArray(relationInputType.generatedClasses, extraClasses);
