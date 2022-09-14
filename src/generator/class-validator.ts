@@ -97,7 +97,7 @@ const validatorsWithParams = new Map<string, string>([
   ['Matches', "'', ''"],
   ['IsHash', "'md4'"],
   ['IsISSN', '{}'],
-  ['IsInstance', ''],
+  ['IsInstance', "''"],
 ]);
 
 const arrayValidators = [
@@ -127,7 +127,10 @@ const PrismaScalarToValidator: Record<string, IClassValidator> = {
 };
 
 function scalarToValidator(scalar: string): IClassValidator | undefined {
-  return { ...PrismaScalarToValidator[scalar] };
+  const validator = PrismaScalarToValidator[scalar];
+  if (validator) {
+    return { ...PrismaScalarToValidator[scalar] };
+  }
 }
 
 function extractValidator(
