@@ -5,11 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.13.0] - 2022-09-14
+
+### Added
+
+- support for composite types (including nested class validation) [#2][i2]
+- `@DtoTypeFullUpdate` annotation [#2][i2-comment]
+- optionally auto-format output with prettier [#3][pr3] (thanks to [@Zyrakia](https://github.com/Zyrakia))
+
+### Changed
+
+- set `@ApiProperty({ required: false, nullable: true }` if field is optional
+- add `{ each: true }` class-validator option if field is a list
+- class-validator `@IsDateString()` for type `DateTime` and `@IsDecimal` for type `Decimal`
+
 ## [1.13.0-beta.1] - 2022-09-10
 
 ### Added
 
-- `@DtoTypeFullUpdate` annotation [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460)
+- `@DtoTypeFullUpdate` annotation [#2][i2]
 
 ## [1.12.2] - 2022-09-09
 
@@ -27,7 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- support for composite types (including nested class validation) #2
+- support for composite types (including nested class validation) [#2][i2]
 
 ### Changed
 
@@ -130,10 +144,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - upgrades prisma dependencies to their latest 3.x versions
 
-### Added
-
-### Changed
-
 ### Fixed
 
 - Generated code imports using \ instead of / ([#10](https://github.com/vegardit/prisma-generator-nestjs-dto/issues/10))
@@ -142,18 +152,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - upgrades prisma dependencies to their latest 3.x versions
 
-### Added
-
-### Changed
-
-### Fixed
-
 ## [1.3.1] - 2021-09-24
 
 - applies available minor and patch updates to dependencies
 
-### Added
-
-### Changed
-
-### Fixed
+[i2]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2
+[i2-comment]: https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460
+[pr3]: https://github.com/Brakebein/prisma-generator-nestjs-dto/pull/3
