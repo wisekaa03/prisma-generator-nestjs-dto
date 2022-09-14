@@ -1,7 +1,12 @@
 import path from 'node:path';
 import slash from 'slash';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_REQUIRED } from '../annotations';
-import { isAnnotatedWith, isRelation, isRequired } from '../field-classifiers';
+import {
+  isAnnotatedWith,
+  isRelation,
+  isRequired,
+  isType,
+} from '../field-classifiers';
 import {
   getRelationScalars,
   getRelativePath,
@@ -48,6 +53,44 @@ export const computeEntityParams = ({
 
     if (isAnnotatedWith(field, DTO_ENTITY_HIDDEN)) return result;
 
+    if (isType(field)) {
+      // don't try to import the class we're preparing params for
+      if (field.type !== model.name) {
+        const modelToImportFrom = allModels.find(
+          ({ name }) => name === field.type,
+        );
+
+        if (!modelToImportFrom)
+          throw new Error(
+            `related type '${field.type}' for '${model.name}.${field.name}' not found`,
+          );
+
+        const importName = templateHelpers.plainDtoName(field.type);
+        const importFrom = slash(
+          `${getRelativePath(
+            model.output.entity,
+            modelToImportFrom.output.dto,
+          )}${path.sep}${templateHelpers.plainDtoFilename(field.type)}`,
+        );
+
+        // don't double-import the same thing
+        // TODO should check for match on any import name ( - no matter where from)
+        if (
+          !imports.some(
+            (item) =>
+              Array.isArray(item.destruct) &&
+              item.destruct.includes(importName) &&
+              item.from === importFrom,
+          )
+        ) {
+          imports.push({
+            destruct: [importName],
+            from: importFrom,
+          });
+        }
+      }
+    }
+
     // relation fields are never required in an entity.
     // they can however be `selected` and thus might optionally be present in the
     // response from PrismaClient
@@ -63,7 +106,7 @@ export const computeEntityParams = ({
       if (field.type !== model.name) {
         const modelToImportFrom = allModels.find(
           ({ name }) => name === field.type,
-        );
+        ) as Model | undefined;
 
         if (!modelToImportFrom)
           throw new Error(
@@ -115,7 +158,10 @@ export const computeEntityParams = ({
     }
 
     if (!templateHelpers.config.noDependencies) {
-      decorators.apiProperties = parseApiProperty(field, { default: false });
+      decorators.apiProperties = parseApiProperty(
+        { ...field, isRequired: false, isNullable: !field.isRequired },
+        { default: false },
+      );
       if (decorators.apiProperties.length) hasApiProperty = true;
     }
 

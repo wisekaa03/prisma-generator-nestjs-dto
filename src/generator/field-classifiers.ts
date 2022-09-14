@@ -56,9 +56,13 @@ export const isUnique = (field: DMMF.Field): boolean => {
 };
 
 export const isRelation = (field: DMMF.Field): boolean => {
-  const { kind /*, relationName */ } = field;
+  const { kind, relationName } = field;
   // indicates a `relation` field
-  return kind === 'object' /* && relationName */;
+  return kind === 'object' && !!relationName;
+};
+
+export const isType = (field: DMMF.Field): boolean => {
+  return field.kind === 'object' && !field.relationName;
 };
 
 export const isIdWithDefaultValue = (field: DMMF.Field): boolean =>

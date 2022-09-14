@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import makeDir from 'make-dir';
 import { generatorHandler } from '@prisma/generator-helper';
-import { parseEnvValue, logger } from '@prisma/sdk';
+import { parseEnvValue, logger } from '@prisma/internals';
 import prettier from 'prettier';
 
 import { run } from './generator';

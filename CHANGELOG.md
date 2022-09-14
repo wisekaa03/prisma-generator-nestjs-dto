@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.13.0-beta.1] - 2022-09-10
+
+### Added
+
+- `@DtoTypeFullUpdate` annotation [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460)
+
 ## [1.12.2] - 2022-09-09
 
 ### Fixed
@@ -16,6 +22,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - optional fields can be `null` in `CreateDTO` and `UpdateDTO`
+
+## [1.13.0-beta.0] - 2022-09-02
+
+### Added
+
+- support for composite types (including nested class validation) #2
+
+### Changed
+
+- set `@ApiProperty({ required: false, nullable: true }` if field is optional
+- add `{ each: true }` class-validator option if field is a list
 
 ## [1.12.0] - 2022-07-25
 

@@ -1,6 +1,9 @@
+import { DMMF } from '@prisma/generator-helper';
 import { ImportStatementParams, ParsedField } from './types';
 import { decorateApiProperty } from './api-decorator';
 import { decorateClassValidators } from './class-validator';
+import { isAnnotatedWith, isType } from './field-classifiers';
+import { DTO_TYPE_FULL_UPDATE } from './annotations';
 
 const PrismaScalarToTypeScript: Record<string, string> = {
   String: 'string',
@@ -132,6 +135,16 @@ export const makeHelpers = ({
   const updateDtoName = (name: string) =>
     className(name, updateDtoPrefix, dtoSuffix);
   const plainDtoName = (name: string) => className(name, '', dtoSuffix);
+  const dtoName = (name: string, dtoType: 'create' | 'update' | 'plain') => {
+    switch (dtoType) {
+      case 'create':
+        return createDtoName(name);
+      case 'update':
+        return updateDtoName(name);
+      default:
+        return plainDtoName(name);
+    }
+  };
 
   const connectDtoFilename = (name: string, withExtension = false) =>
     fileName(name, 'connect-', '.dto', withExtension);
@@ -148,17 +161,29 @@ export const makeHelpers = ({
   const plainDtoFilename = (name: string, withExtension = false) =>
     fileName(name, undefined, '.dto', withExtension);
 
-  const fieldType = (field: ParsedField, toInputType = false) =>
-    `${
+  const fieldType = (
+    field: ParsedField,
+    dtoType: 'create' | 'update' | 'plain' = 'plain',
+    toInputType = false,
+  ) => {
+    const doFullUpdate =
+      dtoType === 'update' &&
+      isType(field as DMMF.Field) &&
+      isAnnotatedWith(field as DMMF.Field, DTO_TYPE_FULL_UPDATE);
+    return `${
       field.kind === 'scalar'
         ? scalarToTS(field.type, toInputType)
         : field.kind === 'enum' || field.kind === 'relation-input'
         ? field.type
-        : entityName(field.type)
+        : field.relationName
+        ? entityName(field.type)
+        : dtoName(field.type, doFullUpdate ? 'create' : dtoType)
     }${when(field.isList, '[]')}`;
+  };
 
   const fieldToDtoProp = (
     field: ParsedField,
+    dtoType: 'create' | 'update' | 'plain',
     useInputTypes = false,
     forceOptional = false,
   ) =>
@@ -166,17 +191,19 @@ export const makeHelpers = ({
       field.name
     }${unless(field.isRequired && !forceOptional, '?')}: ${fieldType(
       field,
+      dtoType,
       useInputTypes,
     )} ${when(field.isNullable, ' | null')};`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],
+    dtoType: 'create' | 'update' | 'plain',
     useInputTypes = false,
     forceOptional = false,
   ) =>
     `${each(
       fields,
-      (field) => fieldToDtoProp(field, useInputTypes, forceOptional),
+      (field) => fieldToDtoProp(field, dtoType, useInputTypes, forceOptional),
       '\n',
     )}`;
 

@@ -1,8 +1,11 @@
+import slash from 'slash';
+import path from 'node:path';
 import {
   DTO_RELATION_CAN_CONNECT_ON_UPDATE,
   DTO_RELATION_CAN_CREATE_ON_UPDATE,
   DTO_RELATION_INCLUDE_ID,
   DTO_RELATION_MODIFIERS_ON_UPDATE,
+  DTO_TYPE_FULL_UPDATE,
   DTO_UPDATE_OPTIONAL,
 } from '../annotations';
 import {
@@ -12,6 +15,7 @@ import {
   isReadOnly,
   isRelation,
   isRequiredWithDefaultValue,
+  isType,
   isUpdatedAt,
 } from '../field-classifiers';
 import {
@@ -19,6 +23,7 @@ import {
   concatUniqueIntoArray,
   generateRelationInput,
   getRelationScalars,
+  getRelativePath,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
   zipImportStatementParams,
@@ -108,6 +113,7 @@ export const computeUpdateDtoParams = ({
     // so this safely allows to mark fields that are required in Prisma Schema
     // as **not** required in UpdateDTO
     const isDtoOptional = isAnnotatedWith(field, DTO_UPDATE_OPTIONAL);
+    const doFullUpdate = isAnnotatedWith(field, DTO_TYPE_FULL_UPDATE);
 
     if (!isDtoOptional) {
       if (isId(field)) return result;
@@ -115,11 +121,59 @@ export const computeUpdateDtoParams = ({
       if (isRequiredWithDefaultValue(field)) return result;
     }
 
+    if (isType(field)) {
+      // don't try to import the class we're preparing params for
+      if (field.type !== model.name) {
+        const modelToImportFrom = allModels.find(
+          ({ name }) => name === field.type,
+        );
+
+        if (!modelToImportFrom)
+          throw new Error(
+            `related type '${field.type}' for '${model.name}.${field.name}' not found`,
+          );
+
+        const importName = doFullUpdate
+          ? templateHelpers.createDtoName(field.type)
+          : templateHelpers.updateDtoName(field.type);
+        const importFrom = slash(
+          `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+            path.sep
+          }${
+            doFullUpdate
+              ? templateHelpers.createDtoFilename(field.type)
+              : templateHelpers.updateDtoFilename(field.type)
+          }`,
+        );
+
+        // don't double-import the same thing
+        // TODO should check for match on any import name ( - no matter where from)
+        if (
+          !imports.some(
+            (item) =>
+              Array.isArray(item.destruct) &&
+              item.destruct.includes(importName) &&
+              item.from === importFrom,
+          )
+        ) {
+          imports.push({
+            destruct: [importName],
+            from: importFrom,
+          });
+        }
+      }
+    }
+
     if (templateHelpers.config.classValidation) {
-      decorators.classValidators = parseClassValidators({
-        ...field,
-        ...overrides,
-      });
+      decorators.classValidators = parseClassValidators(
+        {
+          ...field,
+          ...overrides,
+        },
+        isType(field) && doFullUpdate
+          ? templateHelpers.createDtoName
+          : templateHelpers.updateDtoName,
+      );
       concatUniqueIntoArray(
         decorators.classValidators,
         classValidators,
@@ -128,7 +182,11 @@ export const computeUpdateDtoParams = ({
     }
 
     if (!templateHelpers.config.noDependencies) {
-      decorators.apiProperties = parseApiProperty(field);
+      decorators.apiProperties = parseApiProperty({
+        ...field,
+        ...overrides,
+        isNullable: !field.isRequired,
+      });
       if (decorators.apiProperties.length) hasApiProperty = true;
     }
 
@@ -148,9 +206,18 @@ export const computeUpdateDtoParams = ({
   }
 
   if (classValidators.length) {
+    if (classValidators.find((cv) => cv.name === 'Type')) {
+      imports.unshift({
+        from: 'class-transformer',
+        destruct: ['Type'],
+      });
+    }
     imports.unshift({
       from: 'class-validator',
-      destruct: classValidators.map((v) => v.name).sort(),
+      destruct: classValidators
+        .filter((cv) => cv.name !== 'Type')
+        .map((v) => v.name)
+        .sort(),
     });
   }
 

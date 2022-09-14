@@ -21,6 +21,7 @@ This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/veg
 * enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
 * optionally add [validation decorators](#validation-decorators)
 * control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
+* experimental support for composite types
 
 ### ToDo
 
@@ -96,6 +97,7 @@ model Post {
 - `@DtoRelationCanCreateOnUpdate` - adds [create](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#create-a-related-record) option on a relation field in the generated `UpdateDTO` - useful when you want to allow to create related model instances
 - `@DtoRelationCanConnectOnUpdate` - adds [connect](https://www.prisma.io/docs/concepts/components/prisma-client/relation-queries#connect-an-existing-record) option on a relation field in the generated `UpdateDTO` - useful when you want/need to connect to an existing related instance
 - `@DtoRelationIncludeId` - include ID of a relation field that is otherwise omitted (use instead of `CanCreate`/`CanConnect` annotations, if you just want to pass the IDs)
+- `@DtoTypeFullUpdate` - in the generated `UpdateDTO`, use the `CreateDTO` of the composite type to enforce a complete replacement the old values (see [#2](https://github.com/Brakebein/prisma-generator-nestjs-dto/issues/2#issuecomment-1238855460))
 
 ### Schema Object annotations
 

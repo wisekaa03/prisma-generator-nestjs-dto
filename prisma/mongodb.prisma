@@ -1,0 +1,46 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator nestjsDto {
+  provider                        = "node -r ts-node/register/transpile-only src/cli.ts"
+  output                          = "../src/@generated/monogodb-dto"
+  outputToNestJsResourceStructure = "true"
+  flatResourceStructure           = "true"
+  exportRelationModifierClasses   = "true"
+  reExport                        = "true"
+  createDtoPrefix                 = "Create"
+  updateDtoPrefix                 = "Update"
+  dtoSuffix                       = "Dto"
+  entityPrefix                    = ""
+  entitySuffix                    = "Entity"
+  fileNamingStyle                 = "camel"
+  classValidation                 = "true"
+  noDependencies                  = "false"
+  outputType                      = "class"
+}
+
+model Product {
+  id     String  @id @default(auto()) @map("_id") @db.ObjectId
+  /// @description name
+  name   String
+  /// @DtoTypeFullUpdate
+  photos Photo[]
+  /// @IsIn(['foo', 'bar'])
+  tags   String[]
+}
+
+type Photo {
+  height Int
+  /// @description Image width
+  /// @minimum 9
+  width  Int
+  url    String
+  file   File?
+}
+
+type File {
+  path     String
+  mimeType String
+}

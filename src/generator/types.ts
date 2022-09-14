@@ -24,6 +24,9 @@ export interface ParsedField {
   default?: any;
   apiProperties?: IApiProperty[];
   classValidators?: IClassValidator[];
+  relationName?: string;
+  relationFromFields?: string[];
+  relationToFields?: string[];
 }
 
 export interface ExtraModel {
@@ -84,6 +87,12 @@ export interface ModelParams {
   plain: PlainDtoParams;
 }
 
+export interface TypeParams {
+  create: CreateDtoParams;
+  update: UpdateDtoParams;
+  plain: PlainDtoParams;
+}
+
 export type WriteableFileSpecs = {
   fileName: string;
   content: string;
@@ -98,5 +107,5 @@ export interface IApiProperty {
 
 export interface IClassValidator {
   name: string;
-  value?: any;
+  value?: string;
 }

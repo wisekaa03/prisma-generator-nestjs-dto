@@ -1,7 +1,10 @@
+import slash from 'slash';
+import path from 'node:path';
 import { DTO_ENTITY_HIDDEN, DTO_RELATION_INCLUDE_ID } from '../annotations';
-import { isAnnotatedWith, isRelation } from '../field-classifiers';
+import { isAnnotatedWith, isRelation, isType } from '../field-classifiers';
 import {
   getRelationScalars,
+  getRelativePath,
   makeImportsFromPrismaClient,
   mapDMMFToParsedField,
   zipImportStatementParams,
@@ -16,7 +19,7 @@ import type {
   PlainDtoParams,
 } from '../types';
 import { parseApiProperty } from '../api-decorator';
-import { IApiProperty, IClassValidator } from '../types';
+import { IApiProperty } from '../types';
 
 interface ComputePlainDtoParamsParam {
   model: Model;
@@ -52,8 +55,48 @@ export const computePlainDtoParams = ({
     )
       return result;
 
+    if (isType(field)) {
+      // don't try to import the class we're preparing params for
+      if (field.type !== model.name) {
+        const modelToImportFrom = allModels.find(
+          ({ name }) => name === field.type,
+        );
+
+        if (!modelToImportFrom)
+          throw new Error(
+            `related type '${field.type}' for '${model.name}.${field.name}' not found`,
+          );
+
+        const importName = templateHelpers.plainDtoName(field.type);
+        const importFrom = slash(
+          `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
+            path.sep
+          }${templateHelpers.plainDtoFilename(field.type)}`,
+        );
+
+        // don't double-import the same thing
+        // TODO should check for match on any import name ( - no matter where from)
+        if (
+          !imports.some(
+            (item) =>
+              Array.isArray(item.destruct) &&
+              item.destruct.includes(importName) &&
+              item.from === importFrom,
+          )
+        ) {
+          imports.push({
+            destruct: [importName],
+            from: importFrom,
+          });
+        }
+      }
+    }
+
     if (!templateHelpers.config.noDependencies) {
-      decorators.apiProperties = parseApiProperty(field, { default: false });
+      decorators.apiProperties = parseApiProperty(
+        { ...field, isRequired: false, isNullable: !field.isRequired },
+        { default: false },
+      );
       if (decorators.apiProperties.length) hasApiProperty = true;
     }
 
