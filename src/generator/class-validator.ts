@@ -54,6 +54,7 @@ const validatorsWithoutParams = [
   'IsMimeType',
   'IsSemVer',
   'IsISRC',
+  'IsRFC3339',
   'Allow',
 ];
 
@@ -120,8 +121,8 @@ const PrismaScalarToValidator: Record<string, IClassValidator> = {
   Int: { name: 'IsInt' },
   BigInt: { name: 'IsInt' },
   Float: { name: 'IsNumber' },
-  Decimal: { name: 'IsNumber' },
-  DateTime: { name: 'IsRFC3339' },
+  Decimal: { name: 'IsDecimal' },
+  DateTime: { name: 'IsDateString' },
   // Json: { name: 'IsJSON' },
 };
 

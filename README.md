@@ -171,9 +171,8 @@ Type validators are inferred from the field's type:
 * `Int` &rarr; `@IsInt()`
 * `BigInt` &rarr; `@IsInt()`
 * `Float:` &rarr; `@IsNumber()`
-* `Decimal:` &rarr; `@IsNumber()`
-* `DateTime` &rarr; `@IsRFC3339()`
-* `Json` &rarr; `@IsJSON()`
+* `Decimal:` &rarr; `@IsDecimal()`
+* `DateTime` &rarr; `@IsDateString()`
 
 All remaining [validation decorators](https://github.com/typestack/class-validator#validation-decorators) can be added in the comment/documentation section above the field.
 The parentheses can be omitted if not passing a value.

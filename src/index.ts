@@ -122,6 +122,21 @@ export const generate = async (options: GeneratorOptions) => {
 
   const indexCollections: Record<string, WriteableFileSpecs> = {};
 
+  if (reExport) {
+    results.forEach(({ fileName }) => {
+      const dirName = path.dirname(fileName);
+
+      const { [dirName]: fileSpec } = indexCollections;
+      indexCollections[dirName] = {
+        fileName: fileSpec?.fileName || path.join(dirName, 'index.ts'),
+        content: [
+          fileSpec?.content || '',
+          `export * from './${path.basename(fileName, '.ts')}';`,
+        ].join('\n'),
+      };
+    });
+  }
+
   const applyPrettier = stringToBoolean(
     options.generator.config.prettier,
     false,
@@ -149,21 +164,6 @@ export const generate = async (options: GeneratorOptions) => {
     // Ensures that there are no parsing issues
     // We know that the output files are always Typescript
     prettierConfig.parser = 'typescript';
-  }
-
-  if (reExport) {
-    results.forEach(({ fileName }) => {
-      const dirName = path.dirname(fileName);
-
-      const { [dirName]: fileSpec } = indexCollections;
-      indexCollections[dirName] = {
-        fileName: fileSpec?.fileName || path.join(dirName, 'index.ts'),
-        content: [
-          fileSpec?.content || '',
-          `export * from './${path.basename(fileName, '.ts')}';`,
-        ].join('\n'),
-      };
-    });
   }
 
   return Promise.all(
