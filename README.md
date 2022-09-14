@@ -20,8 +20,9 @@ This is a fork of [@vegardit/prisma-generator-nestjs-dto](https://github.com/veg
 
 * enhance fields with additional schema information, e.g., description, to generate a `@ApiProperty()` decorator (see [Schema Object annotations](#schema-object-annotations))
 * optionally add [validation decorators](#validation-decorators)
+* support for composite types
 * control output format with additional flags `flatResourceStructure`, `noDependencies`, and `outputType`
-* experimental support for composite types
+* optionally auto-format output with prettier
 
 ### ToDo
 
@@ -104,7 +105,7 @@ model Post {
 With `@nestjs/swagger`, you can generate an API specification from code.
 Routes, request bodies, query parameters, etc., are annotated with special decorators.
 Properties can be annotated with the `@ApiProperty()` decorator to add schema object information.
-They are partially added at runtime, which will then include `type`, `nullable`, etc. 
+They are partially added at runtime, which will then include `type`, `nullable`, etc.
 But additional information, such as description, need to be added manually.
 
 If using a generator like this, any custom `@ApiProperty()` annotation would be overridden when updating the DTOs.
@@ -154,7 +155,7 @@ reviewCount: number;
 ```
 
 Default values are added in `CreateDTO` and `UpdateDTO`.
-However, a field with a `@default()` attribute is hidden by default  in `CreateDTO` and `UpdateDTO`,
+However, a field with a `@default()` attribute is hidden by default in `CreateDTO` and `UpdateDTO`,
 hence requires `@DtoCreateOptional` and/or `@DtoUpdateOptional` to be present.
 
 ### Validation decorators
@@ -214,45 +215,42 @@ score?: number;
 <details>
   <summary>Prisma Schema</summary>
   
-  ```prisma
-
+```prisma
 generator nestjsDto {
-provider = "prisma-generator-nestjs-dto"
-output = "../src"
-outputToNestJsResourceStructure = "true"
+  provider = "prisma-generator-nestjs-dto"
+  output = "../src"
+  outputToNestJsResourceStructure = "true"
 }
 
 model Question {
-    id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-    /// @DtoReadOnly
-    createdAt   DateTime @default(now())
-    /// @DtoRelationRequired
-    createdBy   User? @relation("CreatedQuestions", fields: [createdById], references: [id])
-    createdById String? @db.Uuid
-    updatedAt   DateTime @updatedAt
-    /// @DtoRelationRequired
-    updatedBy   User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
-    updatedById String? @db.Uuid
+  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// @DtoReadOnly
+  createdAt   DateTime @default(now())
+  /// @DtoRelationRequired
+  createdBy   User? @relation("CreatedQuestions", fields: [createdById], references: [id])
+  createdById String? @db.Uuid
+  updatedAt   DateTime @updatedAt
+  /// @DtoRelationRequired
+  updatedBy   User? @relation("UpdatedQuestions", fields: [updatedById], references: [id])
+  updatedById String? @db.Uuid
 
-    /// @DtoRelationRequired
-    /// @DtoRelationCanConnectOnCreate
-    category   Category? @relation(fields: [categoryId], references: [id])
-    categoryId String?   @db.Uuid
+  /// @DtoRelationRequired
+  /// @DtoRelationCanConnectOnCreate
+  category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?   @db.Uuid
 
-    /// @DtoCreateOptional
-    /// @DtoRelationCanCreateOnCreate
-    /// @DtoRelationCanConnectOnCreate
-    /// @DtoRelationCanCreateOnUpdate
-    /// @DtoRelationCanConnectOnUpdate
-    tags Tag[]
+  /// @DtoCreateOptional
+  /// @DtoRelationCanCreateOnCreate
+  /// @DtoRelationCanConnectOnCreate
+  /// @DtoRelationCanCreateOnUpdate
+  /// @DtoRelationCanConnectOnUpdate
+  tags Tag[]
 
-    title     String
-    content   String
-    responses Response[]
-
+  title     String
+  content   String
+  responses Response[]
 }
-
-````
+```
 
 </details>
 
@@ -264,7 +262,7 @@ model Question {
 export class ConnectQuestionDto {
   id: string;
 }
-````
+```
 
 ```ts
 // src/question/dto/create-question.dto.ts
