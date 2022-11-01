@@ -211,7 +211,8 @@ export const makeHelpers = ({
     `${decorateApiProperty(field)}${field.name}${unless(
       field.isRequired,
       '?',
-    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};`;
+      '!',
+    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};\n`;
 
   const fieldsToEntityProps = (fields: ParsedField[]) =>
     `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
