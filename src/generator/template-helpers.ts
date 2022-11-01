@@ -212,10 +212,10 @@ export const makeHelpers = ({
       field.isRequired,
       '?',
       '!',
-    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};\n`;
+    )}: ${fieldType(field)} ${when(field.isNullable, ' | null')};`;
 
   const fieldsToEntityProps = (fields: ParsedField[]) =>
-    `${each(fields, (field) => fieldToEntityProp(field), '\n')}`;
+    `${each(fields, (field) => fieldToEntityProp(field), '\n\n')}`;
 
   const apiExtraModels = (names: string[]) =>
     `@ApiExtraModels(${names.map(entityName)})`;

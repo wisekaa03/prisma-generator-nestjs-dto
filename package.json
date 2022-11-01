@@ -1,7 +1,7 @@
 {
   "name": "prisma-nest-generator",
   "description": "Generates DTO and Entity classes from Prisma Schema for NestJS",
-  "version": "1.14.2",
+  "version": "1.14.3",
   "license": "Apache-2.0",
   "author": {
     "name": "Benjamin Kroeger",
@@ -35,6 +35,7 @@
     "test:watch": "jest --watch",
     "cleanup:generated": "rimraf src/@generated",
     "pregenerate": "npm run cleanup:generated",
+    "prepublish": "yarn build",
     "generate": "npx prisma generate && npm run format -- --loglevel error",
     "generate:mongo": "npx prisma generate --schema ./prisma/mongodb.prisma && npm run format -- --loglevel error"
   },
