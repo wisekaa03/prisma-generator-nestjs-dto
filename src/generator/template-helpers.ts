@@ -189,11 +189,11 @@ export const makeHelpers = ({
   ) =>
     `${decorateApiProperty(field)}${decorateClassValidators(field)}${
       field.name
-    }${unless(field.isRequired && !forceOptional, '?')}: ${fieldType(
+    }${unless(field.isRequired && !forceOptional, '?', '!')}: ${fieldType(
       field,
       dtoType,
       useInputTypes,
-    )} ${when(field.isNullable, ' | null')};`;
+    )} ${when(field.isNullable, ' | null')};\n\n`;
 
   const fieldsToDtoProps = (
     fields: ParsedField[],
@@ -204,7 +204,7 @@ export const makeHelpers = ({
     `${each(
       fields,
       (field) => fieldToDtoProp(field, dtoType, useInputTypes, forceOptional),
-      '\n',
+      '\n\n',
     )}`;
 
   const fieldToEntityProp = (field: ParsedField) =>
