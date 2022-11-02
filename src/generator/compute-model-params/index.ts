@@ -11,23 +11,47 @@ interface ComputeModelParamsParam {
   model: Model;
   allModels: Model[];
   templateHelpers: TemplateHelpers;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  updateNamePrefix: string;
+  updateNamePostfix: string;
 }
 export const computeModelParams = ({
   model,
   allModels,
   templateHelpers,
+  connectNamePrefix,
+  connectNamePostfix,
+  createNamePrefix,
+  createNamePostfix,
+  updateNamePrefix,
+  updateNamePostfix,
 }: ComputeModelParamsParam): ModelParams => ({
   // TODO find out if model needs `ConnectDTO`
-  connect: computeConnectDtoParams({ model }),
+  connect: computeConnectDtoParams({
+    model,
+  }),
   create: computeCreateDtoParams({
     model,
     allModels, // ? should this be `allModels: models` instead
     templateHelpers,
+    createNamePrefix,
+    createNamePostfix,
+    connectNamePrefix,
+    connectNamePostfix,
   }),
   update: computeUpdateDtoParams({
     model,
     allModels,
     templateHelpers,
+    connectNamePrefix,
+    connectNamePostfix,
+    createNamePrefix,
+    createNamePostfix,
+    updateNamePrefix,
+    updateNamePostfix,
   }),
   entity: computeEntityParams({
     model,

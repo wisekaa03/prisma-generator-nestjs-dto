@@ -86,11 +86,21 @@ export const importStatements = (items: ImportStatementParams[]) =>
   `${each(items, importStatement, '\n')}`;
 
 interface MakeHelpersParam {
+  connectNamePrefix: string;
+  connectNamePostfix: string;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  updateNamePrefix: string;
+  updateNamePostfix: string;
   connectDtoPrefix: string;
+  connectDtoPostfix: string;
   createDtoPrefix: string;
+  createDtoPostfix: string;
   updateDtoPrefix: string;
+  updateDtoPostfix: string;
   dtoSuffix: string;
   entityPrefix: string;
+  entityPostfix: string;
   entitySuffix: string;
   transformClassNameCase?: (item: string) => string;
   transformFileNameCase?: (item: string) => string;
@@ -99,11 +109,21 @@ interface MakeHelpersParam {
   noDependencies: boolean;
 }
 export const makeHelpers = ({
+  connectNamePrefix,
+  connectNamePostfix,
+  createNamePrefix,
+  createNamePostfix,
+  updateNamePrefix,
+  updateNamePostfix,
   connectDtoPrefix,
+  connectDtoPostfix,
   createDtoPrefix,
+  createDtoPostfix,
   updateDtoPrefix,
+  updateDtoPostfix,
   dtoSuffix,
   entityPrefix,
+  entityPostfix,
   entitySuffix,
   transformClassNameCase = echo,
   transformFileNameCase = echo,
@@ -111,30 +131,31 @@ export const makeHelpers = ({
   outputType,
   noDependencies,
 }: MakeHelpersParam) => {
-  const className = (name: string, prefix = '', suffix = '') =>
-    `${prefix}${transformClassNameCase(name)}${suffix}`;
+  const className = (name: string, prefix = '', postfix = '', suffix = '') =>
+    `${prefix}${transformClassNameCase(name)}${postfix}${suffix}`;
   const fileName = (
     name: string,
     prefix = '',
+    postfix = '',
     suffix = '',
     withExtension = false,
   ) =>
-    `${prefix}${transformFileNameCase(name)}${suffix}${when(
+    `${prefix}${transformFileNameCase(name)}${postfix}${suffix}${when(
       withExtension,
       '.ts',
     )}`;
 
   const entityName = (name: string) =>
     /dto$/i.test(name)
-      ? className(name, '', '')
-      : className(name, entityPrefix, entitySuffix);
+      ? className(name, '', '', '')
+      : className(name, entityPrefix, entityPostfix, entitySuffix);
   const connectDtoName = (name: string) =>
-    className(name, connectDtoPrefix, dtoSuffix);
+    className(name, connectDtoPrefix, connectDtoPostfix, dtoSuffix);
   const createDtoName = (name: string) =>
-    className(name, createDtoPrefix, dtoSuffix);
+    className(name, createDtoPrefix, createDtoPostfix, dtoSuffix);
   const updateDtoName = (name: string) =>
-    className(name, updateDtoPrefix, dtoSuffix);
-  const plainDtoName = (name: string) => className(name, '', dtoSuffix);
+    className(name, updateDtoPrefix, updateDtoPostfix, dtoSuffix);
+  const plainDtoName = (name: string) => className(name, '', '', dtoSuffix);
   const dtoName = (name: string, dtoType: 'create' | 'update' | 'plain') => {
     switch (dtoType) {
       case 'create':
@@ -146,20 +167,41 @@ export const makeHelpers = ({
     }
   };
 
-  const connectDtoFilename = (name: string, withExtension = false) =>
-    fileName(name, 'connect-', '.dto', withExtension);
+  const connectDtoFilename = (
+    name: string,
+    connectNamePrefix: string,
+    connectNamePostfix: string,
+    withExtension = false,
+  ) =>
+    fileName(
+      name,
+      connectNamePrefix,
+      connectNamePostfix,
+      '.dto',
+      withExtension,
+    );
 
-  const createDtoFilename = (name: string, withExtension = false) =>
-    fileName(name, 'create-', '.dto', withExtension);
+  const createDtoFilename = (
+    name: string,
+    createNamePrefix: string,
+    createNamePostfix: string,
+    withExtension = false,
+  ) =>
+    fileName(name, createNamePrefix, createNamePostfix, '.dto', withExtension);
 
-  const updateDtoFilename = (name: string, withExtension = false) =>
-    fileName(name, 'update-', '.dto', withExtension);
+  const updateDtoFilename = (
+    name: string,
+    updateNamePrefix: string,
+    updateNamePostfix: string,
+    withExtension = false,
+  ) =>
+    fileName(name, updateNamePrefix, updateNamePostfix, '.dto', withExtension);
 
   const entityFilename = (name: string, withExtension = false) =>
-    fileName(name, undefined, '.entity', withExtension);
+    fileName(name, undefined, '.entity', '', withExtension);
 
   const plainDtoFilename = (name: string, withExtension = false) =>
-    fileName(name, undefined, '.dto', withExtension);
+    fileName(name, undefined, '.dto', '', withExtension);
 
   const fieldType = (
     field: ParsedField,
@@ -223,10 +265,14 @@ export const makeHelpers = ({
   return {
     config: {
       connectDtoPrefix,
+      connectDtoPostfix,
       createDtoPrefix,
+      createDtoPostfix,
       updateDtoPrefix,
+      updateDtoPostfix,
       dtoSuffix,
       entityPrefix,
+      entityPostfix,
       entitySuffix,
       classValidation,
       outputType,

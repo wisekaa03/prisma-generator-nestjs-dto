@@ -8,21 +8,43 @@ interface ComputeModelParamsParam {
   model: Model;
   allModels: Model[];
   templateHelpers: TemplateHelpers;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  updateNamePrefix: string;
+  updateNamePostfix: string;
 }
 export const computeTypeParams = ({
   model,
   allModels,
   templateHelpers,
+  connectNamePrefix,
+  connectNamePostfix,
+  createNamePrefix,
+  createNamePostfix,
+  updateNamePrefix,
+  updateNamePostfix,
 }: ComputeModelParamsParam): TypeParams => ({
   create: computeCreateDtoParams({
     model,
     allModels,
     templateHelpers,
+    createNamePrefix,
+    createNamePostfix,
+    connectNamePrefix,
+    connectNamePostfix,
   }),
   update: computeUpdateDtoParams({
     model,
     allModels,
     templateHelpers,
+    connectNamePrefix,
+    connectNamePostfix,
+    createNamePrefix,
+    createNamePostfix,
+    updateNamePrefix,
+    updateNamePostfix,
   }),
   plain: computePlainDtoParams({
     model,

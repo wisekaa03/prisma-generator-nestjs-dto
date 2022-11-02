@@ -169,6 +169,10 @@ interface GenerateRelationInputParam {
     | TemplateHelpers['updateDtoName'];
   canCreateAnnotation: RegExp;
   canConnectAnnotation: RegExp;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
 }
 export const generateRelationInput = ({
   field,
@@ -178,6 +182,10 @@ export const generateRelationInput = ({
   preAndSuffixClassName,
   canCreateAnnotation,
   canConnectAnnotation,
+  createNamePrefix,
+  createNamePostfix,
+  connectNamePrefix,
+  connectNamePostfix,
 }: GenerateRelationInputParam) => {
   const relationInputClassProps: Array<Pick<ParsedField, 'name' | 'type'>> = [];
 
@@ -201,7 +209,11 @@ export const generateRelationInput = ({
         `${getRelativePath(
           model.output.dto,
           modelToImportFrom.output.dto,
-        )}${sep}${t.createDtoFilename(field.type)}`,
+        )}${sep}${t.createDtoFilename(
+          field.type,
+          createNamePrefix,
+          createNamePostfix,
+        )}`,
       ),
       destruct: [preAndPostfixedName],
     });
@@ -227,7 +239,11 @@ export const generateRelationInput = ({
         `${getRelativePath(
           model.output.dto,
           modelToImportFrom.output.dto,
-        )}${sep}${t.connectDtoFilename(field.type)}`,
+        )}${sep}${t.connectDtoFilename(
+          field.type,
+          connectNamePrefix,
+          connectNamePostfix,
+        )}`,
       ),
       destruct: [preAndPostfixedName],
     });

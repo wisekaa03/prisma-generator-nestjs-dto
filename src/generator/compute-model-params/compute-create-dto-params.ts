@@ -46,11 +46,19 @@ interface ComputeCreateDtoParamsParam {
   model: Model;
   allModels: Model[];
   templateHelpers: TemplateHelpers;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
 }
 export const computeCreateDtoParams = ({
   model,
   allModels,
   templateHelpers,
+  createNamePrefix,
+  createNamePostfix,
+  connectNamePrefix,
+  connectNamePostfix,
 }: ComputeCreateDtoParamsParam): CreateDtoParams => {
   let hasApiProperty = false;
   const imports: ImportStatementParams[] = [];
@@ -88,6 +96,10 @@ export const computeCreateDtoParams = ({
         preAndSuffixClassName: templateHelpers.createDtoName,
         canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_CREATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_CREATE,
+        createNamePrefix,
+        createNamePostfix,
+        connectNamePrefix,
+        connectNamePostfix,
       });
 
       const isDtoRelationRequired = isAnnotatedWith(
@@ -147,7 +159,11 @@ export const computeCreateDtoParams = ({
         const importFrom = slash(
           `${getRelativePath(model.output.dto, modelToImportFrom.output.dto)}${
             path.sep
-          }${templateHelpers.createDtoFilename(field.type)}`,
+          }${templateHelpers.createDtoFilename(
+            field.type,
+            createNamePrefix,
+            createNamePostfix,
+          )}`,
         );
 
         // don't double-import the same thing

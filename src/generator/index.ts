@@ -22,11 +22,21 @@ interface RunParam {
   outputToNestJsResourceStructure: boolean;
   flatResourceStructure: boolean;
   connectDtoPrefix: string;
+  connectDtoPostfix: string;
   createDtoPrefix: string;
+  createDtoPostfix: string;
   updateDtoPrefix: string;
+  updateDtoPostfix: string;
   dtoSuffix: string;
   entityPrefix: string;
+  entityPostfix: string;
   entitySuffix: string;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  updateNamePrefix: string;
+  updateNamePostfix: string;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
   fileNamingStyle: NamingStyle;
   classValidation: boolean;
   outputType: string;
@@ -46,6 +56,12 @@ export const run = ({
     classValidation,
     outputType,
     noDependencies,
+    createNamePrefix,
+    createNamePostfix,
+    updateNamePrefix,
+    updateNamePostfix,
+    connectNamePrefix,
+    connectNamePostfix,
     ...preAndSuffixes
   } = options;
 
@@ -64,6 +80,12 @@ export const run = ({
     classValidation,
     outputType,
     noDependencies,
+    createNamePrefix,
+    createNamePostfix,
+    updateNamePrefix,
+    updateNamePostfix,
+    connectNamePrefix,
+    connectNamePostfix,
     ...preAndSuffixes,
   });
   const allModels = dmmf.datamodel.models;
@@ -110,13 +132,24 @@ export const run = ({
       model,
       allModels: filteredTypes,
       templateHelpers,
+      connectNamePrefix,
+      connectNamePostfix,
+      createNamePrefix,
+      createNamePostfix,
+      updateNamePrefix,
+      updateNamePostfix,
     });
 
     // generate create-model.dto.ts
     const createDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.createDtoFilename(model.name, true),
+        templateHelpers.createDtoFilename(
+          model.name,
+          createNamePrefix,
+          createNamePostfix,
+          true,
+        ),
       ),
       content: generateCreateDto({
         ...typeParams.create,
@@ -129,7 +162,12 @@ export const run = ({
     const updateDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.updateDtoFilename(model.name, true),
+        templateHelpers.updateDtoFilename(
+          model.name,
+          updateNamePrefix,
+          updateNamePostfix,
+          true,
+        ),
       ),
       content: generateUpdateDto({
         ...typeParams.update,
@@ -159,6 +197,12 @@ export const run = ({
     const modelParams = computeModelParams({
       model,
       allModels: [...filteredTypes, ...filteredModels],
+      connectNamePrefix,
+      connectNamePostfix,
+      createNamePrefix,
+      createNamePostfix,
+      updateNamePrefix,
+      updateNamePostfix,
       templateHelpers,
     });
 
@@ -166,7 +210,12 @@ export const run = ({
     const connectDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.connectDtoFilename(model.name, true),
+        templateHelpers.connectDtoFilename(
+          model.name,
+          connectNamePrefix,
+          connectNamePostfix,
+          true,
+        ),
       ),
       content: generateConnectDto({
         ...modelParams.connect,
@@ -178,7 +227,12 @@ export const run = ({
     const createDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.createDtoFilename(model.name, true),
+        templateHelpers.createDtoFilename(
+          model.name,
+          createNamePrefix,
+          createNamePostfix,
+          true,
+        ),
       ),
       content: generateCreateDto({
         ...modelParams.create,
@@ -192,7 +246,12 @@ export const run = ({
     const updateDto = {
       fileName: path.join(
         model.output.dto,
-        templateHelpers.updateDtoFilename(model.name, true),
+        templateHelpers.updateDtoFilename(
+          model.name,
+          updateNamePrefix,
+          updateNamePostfix,
+          true,
+        ),
       ),
       content: generateUpdateDto({
         ...modelParams.update,

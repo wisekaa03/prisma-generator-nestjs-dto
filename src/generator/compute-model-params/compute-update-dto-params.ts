@@ -46,11 +46,23 @@ interface ComputeUpdateDtoParamsParam {
   model: Model;
   allModels: Model[];
   templateHelpers: TemplateHelpers;
+  connectNamePrefix: string;
+  connectNamePostfix: string;
+  createNamePrefix: string;
+  createNamePostfix: string;
+  updateNamePrefix: string;
+  updateNamePostfix: string;
 }
 export const computeUpdateDtoParams = ({
   model,
   allModels,
   templateHelpers,
+  connectNamePrefix,
+  connectNamePostfix,
+  createNamePrefix,
+  createNamePostfix,
+  updateNamePrefix,
+  updateNamePostfix,
 }: ComputeUpdateDtoParamsParam): UpdateDtoParams => {
   let hasApiProperty = false;
   const imports: ImportStatementParams[] = [];
@@ -91,6 +103,10 @@ export const computeUpdateDtoParams = ({
         preAndSuffixClassName: templateHelpers.updateDtoName,
         canCreateAnnotation: DTO_RELATION_CAN_CREATE_ON_UPDATE,
         canConnectAnnotation: DTO_RELATION_CAN_CONNECT_ON_UPDATE,
+        createNamePrefix,
+        createNamePostfix,
+        connectNamePrefix,
+        connectNamePostfix,
       });
 
       overrides.type = relationInputType.type;
@@ -141,8 +157,16 @@ export const computeUpdateDtoParams = ({
             path.sep
           }${
             doFullUpdate
-              ? templateHelpers.createDtoFilename(field.type)
-              : templateHelpers.updateDtoFilename(field.type)
+              ? templateHelpers.createDtoFilename(
+                  field.type,
+                  createNamePrefix,
+                  createNamePostfix,
+                )
+              : templateHelpers.updateDtoFilename(
+                  field.type,
+                  updateNamePrefix,
+                  updateNamePostfix,
+                )
           }`,
         );
 
